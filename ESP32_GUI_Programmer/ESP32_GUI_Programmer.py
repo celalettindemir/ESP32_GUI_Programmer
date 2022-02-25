@@ -67,7 +67,7 @@ def update_progress(progress):
         block = int(round(barLength * progress))
         msg = "\rUploading: [{0}] {1}% {2}".format(
             "=" * block + " " * (barLength - block), int(progress * 100), status)
-        sys.stderr.write(msg)
+        #sys.stderr.write(msg)
         sys.stderr.flush()
         global OTAstatus
         OTAstatus = msg
@@ -101,7 +101,8 @@ def serve(remoteAddr, localAddr, remotePort, localPort, password, filename, comm
     OTAstatus = "Sending Command"
     logging.info('Upload size: %d', content_size)
     message = '%d %d %d %s\n' % (command, localPort, content_size, file_md5)
-
+    print(message)
+    #return 1
     # Wait for a connection
     inv_trys = 0
     data = ''
@@ -109,11 +110,12 @@ def serve(remoteAddr, localAddr, remotePort, localPort, password, filename, comm
     msg = 'Sending invitation to %s ' % (remoteAddr)
     OTAstatus = msg
 
-    sys.stderr.write(msg)
+    #sys.stderr.write(msg)
     sys.stderr.flush()
     #return 0
     while (inv_trys < 10):
         inv_trys += 1
+        # Create a TCP/IP UDP socket
         sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         remote_address = (remoteAddr, int(remotePort))
         try:
@@ -176,6 +178,7 @@ def serve(remoteAddr, localAddr, remotePort, localPort, password, filename, comm
     logging.info('Waiting for device...')
     OTAstatus = "Waiting"
     try:
+        #TCP ip socket
         sock.settimeout(10)
         connection, client_address = sock.accept()
         sock.settimeout(None)
@@ -205,6 +208,7 @@ def serve(remoteAddr, localAddr, remotePort, localPort, password, filename, comm
             try:
                 connection.sendall(chunk)
                 res = connection.recv(10)
+                #print('OK' in res.decode())
                 lastResponseContainedOK = 'OK' in res.decode()
             except:
                 OTAstatus = "Error Uploading"
@@ -216,6 +220,7 @@ def serve(remoteAddr, localAddr, remotePort, localPort, password, filename, comm
                 return 1
 
         if lastResponseContainedOK:
+            print("1buraya girdi")
             OTAstatus = "Success"
             logging.info('Success')
             connection.close()
@@ -232,6 +237,7 @@ def serve(remoteAddr, localAddr, remotePort, localPort, password, filename, comm
                 count = count + 1
                 connection.settimeout(60)
                 data = connection.recv(32).decode()
+                print(data)
                 logging.info('Result: %s', data)
 
                 if "OK" in data:
@@ -271,7 +277,7 @@ def serve(remoteAddr, localAddr, remotePort, localPort, password, filename, comm
 add_library('controlP5')
 
 fileToUpload = ""
-ipAddressText = "192.168.1.100"#default ip address
+ipAddressText = "192.168.2.199"#default ip address
 
 
 
@@ -334,4 +340,3 @@ def fileSelected(selection):
         global OTAstatus
         fileToUpload = ("%s" % (selection.getAbsolutePath()))
         OTAstatus = "File to Upload: " + selection.getName()
-   
